@@ -33,6 +33,7 @@
         "target_reward_claim": "target_claim.png",
         "gear_reward_claim": "gear_claim.png",
         "claim_button_green": "claim_green.png",
+        "confirm_button": "confirm_button.png",
         "game_loaded": "game_loaded.png",
         "loading_screen": "loading_screen.png",
         "reconnect_popup": "reconnect.png",

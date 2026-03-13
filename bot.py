@@ -374,21 +374,34 @@ def wait_and_collect_reward(image_key, label, max_wait_minutes):
         handle_popups()
 
         # Check for the specific reward's claim button
+        claimed = False
         if click_image(image_key, f"{label} Claim"):
-            elapsed = time.time() - start
-            logger.info(f"COLLECTED {label} after {elapsed:.0f}s")
+            claimed = True
+        else:
+            # Fallback: try the generic green "Claim" button
+            # (only if the specific reward image isn't available)
+            path = get_image_path(image_key)
+            if not os.path.exists(path):
+                if click_image("claim_button_green", f"{label} (green Claim)"):
+                    claimed = True
+
+        if claimed:
+            # After clicking Claim, a confirmation popup appears
+            # with a green "Confirm" button — click it
+            time.sleep(1)  # Wait for confirmation popup to appear
+            for confirm_attempt in range(5):
+                if click_image("confirm_button", f"{label} Confirm"):
+                    elapsed = time.time() - start
+                    logger.info(f"COLLECTED {label} after {elapsed:.0f}s "
+                                f"(Claim + Confirm)")
+                    time.sleep(CONFIG["timing"]["post_collect_wait_seconds"])
+                    return True
+                time.sleep(0.5)
+            # If Confirm button not found, the claim might still have worked
+            logger.warning(f"Clicked Claim for {label} but Confirm button "
+                           f"not found — may still have collected")
             time.sleep(CONFIG["timing"]["post_collect_wait_seconds"])
             return True
-
-        # Also try the generic green "Claim" button as a fallback,
-        # but only if the specific reward image isn't available
-        path = get_image_path(image_key)
-        if not os.path.exists(path):
-            if click_image("claim_button_green", f"{label} (green Claim)"):
-                elapsed = time.time() - start
-                logger.info(f"COLLECTED {label} via green Claim after {elapsed:.0f}s")
-                time.sleep(CONFIG["timing"]["post_collect_wait_seconds"])
-                return True
 
         time.sleep(check_interval)
 

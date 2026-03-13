@@ -7,8 +7,8 @@ Automated bot for **Train Robots to Fight** that collects Online Reward gifts, t
 Each cycle:
 1. **Launches** Roblox and joins the game
 2. **Clicks** the "Online Gifts" button to open the reward grid
-3. **Waits** for the **Target reward** (crosshair, ~15 min) → Claims it
-4. **Waits** for the **Gear reward** (red gear, ~20 min) → Claims it
+3. **Waits** for the **Target reward** (crosshair, ~15 min) → Clicks Claim → Clicks Confirm
+4. **Waits** for the **Gear reward** (red gear, ~20 min) → Clicks Claim → Clicks Confirm
 5. **Closes** Roblox and **relaunches** for the next cycle
 6. **Anti-AFK**: sends small inputs every 5 min to prevent the 15-min idle disconnect
 
@@ -53,6 +53,7 @@ Or capture them manually (screenshot → crop → save as PNG to `images/`):
 | `images/online_gifts_button.png` | The gift box button above "Daily Pack" (opens the reward grid) |
 | `images/target_claim.png` | The crosshair/target reward tile when it shows "Claim" |
 | `images/gear_claim.png` | The red gear reward tile when it shows "Claim" |
+| `images/confirm_button.png` | The green "Confirm" button on the confirmation popup |
 
 **Recommended:**
 

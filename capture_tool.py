@@ -136,6 +136,11 @@ def main():
          "  Wait until the 20-min timer finishes, then capture it.\n"
          "  Crop the entire tile including the Claim text."),
 
+        ("confirm_button", "Confirm Button (REQUIRED)",
+         "The green 'Confirm' button that appears AFTER you click Claim.\n"
+         "  A popup shows the reward and a green 'Confirm' button.\n"
+         "  Crop just the green 'Confirm' button."),
+
         ("claim_button_green", "Green 'Claim' Button (RECOMMENDED)",
          "The green 'Claim' button/text that appears on claimable rewards.\n"
          "  Just the green 'Claim' portion, not the whole tile.\n"
