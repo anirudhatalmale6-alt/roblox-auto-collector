@@ -1,0 +1,59 @@
+{
+    "game": {
+        "place_id": "REPLACE_WITH_YOUR_PLACE_ID",
+        "launch_url_template": "roblox://placeId={place_id}",
+        "roblox_exe_name": "RobloxPlayerBeta.exe",
+        "roblox_launcher_exe": "RobloxPlayerLauncher.exe"
+    },
+
+    "timing": {
+        "reward_cycle_minutes": 20,
+        "reward_check_interval_seconds": 5,
+        "post_collect_wait_seconds": 2,
+        "post_close_wait_seconds": 5,
+        "post_launch_wait_seconds": 15,
+        "loading_check_interval_seconds": 3,
+        "max_loading_wait_seconds": 120,
+        "click_delay_seconds": 0.5,
+        "between_rewards_delay_seconds": 1.5
+    },
+
+    "images": {
+        "folder": "images",
+        "reward_button_1": "reward_1.png",
+        "reward_button_2": "reward_2.png",
+        "reward_button_3": "reward_3.png",
+        "game_loaded": "game_loaded.png",
+        "loading_screen": "loading_screen.png",
+        "reconnect_popup": "reconnect.png",
+        "update_popup": "update.png",
+        "play_button": "play_button.png",
+        "server_select": "server_select.png",
+        "close_button": "close_button.png"
+    },
+
+    "matching": {
+        "confidence_threshold": 0.8,
+        "grayscale_matching": false,
+        "multi_scale": false,
+        "scales": [0.8, 0.9, 1.0, 1.1, 1.2]
+    },
+
+    "window": {
+        "title_contains": "Roblox",
+        "bring_to_front_before_action": true
+    },
+
+    "logging": {
+        "log_file": "bot.log",
+        "console_output": true,
+        "log_level": "INFO"
+    },
+
+    "safety": {
+        "failsafe_enabled": true,
+        "failsafe_corner": "top-left",
+        "max_consecutive_failures": 5,
+        "pause_on_failure_seconds": 10
+    }
+}
