@@ -2,19 +2,13 @@
 capture_tool.py — Helper tool for capturing reference screenshots.
 
 Run this BEFORE using the bot to capture screenshots of the game UI
-elements that the bot needs to recognize. Each capture is saved to
-the images/ folder with the correct filename.
+elements that the bot needs to recognize.
 
 Usage:
     python capture_tool.py
 
-The tool walks you through capturing each required image:
-1. Shows what to capture
-2. Lets you select a region on screen
-3. Saves the cropped image
-
-You can also capture images manually — just take a screenshot, crop
-the UI element tightly, and save it to images/ with the right name.
+You can also capture images manually — just screenshot, crop tightly,
+and save as PNG to the images/ folder with the correct filename.
 """
 
 import os
@@ -31,27 +25,18 @@ except ImportError:
 
 
 def load_config(path="config.json"):
-    """Load config to get image filenames."""
     with open(path, "r") as f:
         return json.load(f)
 
 
 def ensure_images_dir(config):
-    """Create images directory if it doesn't exist."""
     folder = config["images"]["folder"]
     os.makedirs(folder, exist_ok=True)
     return folder
 
 
 def capture_region_interactive(save_path, description):
-    """
-    Guide user through capturing a screen region.
-
-    Steps:
-    1. User positions the UI element on screen
-    2. User provides coordinates (or we use a simple click method)
-    3. Region is captured and saved
-    """
+    """Guide user through capturing a screen region."""
     print(f"\n{'='*60}")
     print(f"CAPTURE: {description}")
     print(f"{'='*60}")
@@ -65,7 +50,7 @@ def capture_region_interactive(save_path, description):
             return False
 
     print("  OPTIONS:")
-    print("  1) Full-screen screenshot (you'll crop manually)")
+    print("  1) Full-screen screenshot (you crop it later)")
     print("  2) Enter pixel coordinates (x, y, width, height)")
     print("  3) Click two corners (top-left, bottom-right)")
     print("  s) Skip this image")
@@ -82,7 +67,7 @@ def capture_region_interactive(save_path, description):
         screenshot = pyautogui.screenshot()
         screenshot.save(save_path)
         print(f"  Saved full screenshot to {save_path}")
-        print(f"  IMPORTANT: Open this file and crop to JUST the UI element!")
+        print(f"  IMPORTANT: Open and crop to JUST the UI element!")
         return True
 
     if choice == '2':
@@ -100,13 +85,13 @@ def capture_region_interactive(save_path, description):
         return True
 
     if choice == '3':
-        print("  Move your mouse to the TOP-LEFT corner of the element...")
+        print("  Move mouse to TOP-LEFT corner of the element...")
         print("  You have 5 seconds...")
         time.sleep(5)
         x1, y1 = pyautogui.position()
         print(f"  Got top-left: ({x1}, {y1})")
 
-        print("  Now move to the BOTTOM-RIGHT corner...")
+        print("  Now move to BOTTOM-RIGHT corner...")
         print("  You have 5 seconds...")
         time.sleep(5)
         x2, y2 = pyautogui.position()
@@ -134,50 +119,63 @@ def main():
     config = load_config()
     folder = ensure_images_dir(config)
 
-    # Define all images to capture with descriptions
+    # Images to capture, in order of importance
     captures = [
-        ("reward_button_1", "Reward Button 1",
-         "The FIRST reward/power button when it appears on screen.\n"
+        ("online_gifts_button", "Online Gifts Button (REQUIRED)",
+         "The gift box button above 'Daily Pack' on the left side panel.\n"
+         "  This is what the bot clicks to open the rewards grid.\n"
          "  Crop tightly around just the button."),
-        ("reward_button_2", "Reward Button 2",
-         "The SECOND reward button (if it looks different from #1).\n"
-         "  If all 3 look the same, you can copy reward_1.png."),
-        ("reward_button_3", "Reward Button 3",
-         "The THIRD reward button (if it looks different).\n"
-         "  If all 3 look the same, you can copy reward_1.png."),
-        ("game_loaded", "Game Loaded Indicator",
-         "Something that's ALWAYS visible when the game is fully loaded.\n"
-         "  Could be a HUD element, health bar, or UI button.\n"
+
+        ("target_reward_claim", "Target Reward Claim Button (REQUIRED)",
+         "The green crosshair/target reward tile when it shows 'Claim'.\n"
+         "  Wait until the 15-min timer finishes and it becomes claimable,\n"
+         "  then capture it. Crop the entire tile including the Claim text."),
+
+        ("gear_reward_claim", "Gear Reward Claim Button (REQUIRED)",
+         "The red gear reward tile when it shows 'Claim'.\n"
+         "  Wait until the 20-min timer finishes, then capture it.\n"
+         "  Crop the entire tile including the Claim text."),
+
+        ("claim_button_green", "Green 'Claim' Button (RECOMMENDED)",
+         "The green 'Claim' button/text that appears on claimable rewards.\n"
+         "  Just the green 'Claim' portion, not the whole tile.\n"
+         "  This is a fallback if the specific reward images don't match."),
+
+        ("game_loaded", "Game Loaded Indicator (RECOMMENDED)",
+         "Something visible when the game is fully loaded (HUD, health bar, etc.).\n"
          "  Should NOT appear on loading screens."),
-        ("loading_screen", "Loading Screen",
-         "The Roblox loading screen (the spinner or progress bar).\n"
-         "  Capture a distinctive part of the loading UI."),
-        ("reconnect_popup", "Reconnect Popup (optional)",
-         "The 'Reconnect' button that appears when disconnected.\n"
-         "  Skip if you haven't seen this popup."),
-        ("update_popup", "Update Popup (optional)",
-         "The 'Update' or 'OK' button on update notifications.\n"
-         "  Skip if you haven't seen this popup."),
-        ("play_button", "Play/Join Button (optional)",
-         "If there's a server selection screen with a Play button.\n"
-         "  Skip if the game auto-joins."),
-        ("server_select", "Server Selection (optional)",
-         "Any server list or selection screen element.\n"
-         "  Skip if the game auto-joins a server."),
+
+        ("loading_screen", "Loading Screen (OPTIONAL)",
+         "The Roblox loading spinner or progress bar.\n"
+         "  Helps the bot detect when loading is finished."),
+
+        ("reconnect_popup", "Reconnect Popup (OPTIONAL)",
+         "The 'Reconnect' button if you've seen a disconnect popup.\n"
+         "  Skip if you haven't encountered this."),
+
+        ("update_popup", "Update Popup (OPTIONAL)",
+         "The 'OK/Update' button on update notifications.\n"
+         "  Skip if you haven't encountered this."),
+
+        ("close_reward_panel", "Close Reward Panel Button (OPTIONAL)",
+         "The X or close button on the Online Reward grid.\n"
+         "  Skip if not needed."),
     ]
 
     print("\n" + "=" * 60)
     print("  ROBLOX BOT — Reference Image Capture Tool")
+    print("  Game: Train Robots to Fight")
     print("=" * 60)
     print()
-    print("This tool helps you capture screenshots of game UI elements")
-    print("that the bot needs to recognize. You'll capture each element")
-    print("one at a time.")
+    print("This tool captures screenshots of game UI elements.")
+    print("The bot uses these to find and click buttons automatically.")
     print()
     print("TIPS:")
-    print("• Open the Roblox game first so the UI elements are visible")
-    print("• Crop images TIGHTLY — don't include extra background")
-    print("• The 3 reward buttons are REQUIRED; others are optional")
+    print("• Open the game first so UI elements are visible")
+    print("• Crop images TIGHTLY — no extra background")
+    print("• Use PNG format (lossless quality)")
+    print("• For the reward Claim images, wait until the timer finishes")
+    print("  so the Claim button is visible, then capture")
     print()
     input("Press Enter to begin...")
 
@@ -185,7 +183,7 @@ def main():
     skipped = 0
 
     for key, name, desc in captures:
-        filename = config["images"][key]
+        filename = config["images"].get(key, f"{key}.png")
         path = os.path.join(folder, filename)
 
         if capture_region_interactive(path, f"{name}\n  {desc}"):
@@ -200,9 +198,9 @@ def main():
     print()
     print("Next steps:")
     print("1. Verify each image looks correct (tight crop, clear)")
-    print("2. Update config.json with your game's Place ID")
-    print("3. Run: python bot.py --dry-run   (test without clicking)")
-    print("4. Run: python bot.py             (start the bot)")
+    print("2. Set your Place ID in config.json")
+    print("3. Test: python bot.py --dry-run")
+    print("4. Run:  python bot.py")
 
 
 if __name__ == "__main__":

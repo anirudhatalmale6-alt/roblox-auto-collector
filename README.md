@@ -1,78 +1,86 @@
 # Roblox Auto-Collection Rejoin Bot
 
-Automated bot that collects power rewards in a Roblox game, then closes and relaunches the game to repeat the cycle. Uses **image-based screen matching** — no memory editing or packet injection.
+Automated bot for **Train Robots to Fight** that collects Online Reward gifts, then closes and relaunches the game to repeat the cycle. Uses **image-based screen matching** — no memory editing or packet injection.
 
-## How It Works
+## What It Does
 
-1. **Launches** your Roblox game via the `roblox://` protocol
-2. **Waits** for the game to fully load (detects loading screen)
-3. **Monitors** the screen for reward buttons to appear (~20 min cycle)
-4. **Clicks** all 3 reward buttons in sequence
+Each cycle:
+1. **Launches** Roblox and joins the game
+2. **Clicks** the "Online Gifts" button to open the reward grid
+3. **Waits** for the **Target reward** (crosshair, ~15 min) → Claims it
+4. **Waits** for the **Gear reward** (red gear, ~20 min) → Claims it
 5. **Closes** Roblox and **relaunches** for the next cycle
-6. Handles Reconnect/Update popups automatically
+6. **Anti-AFK**: sends small inputs every 5 min to prevent the 15-min idle disconnect
 
 ## Requirements
 
-- **Windows 10/11** (uses win32 APIs for window management)
+- **Windows 10/11**
 - **Python 3.8+** ([download](https://www.python.org/downloads/))
-- **Roblox** installed via the Microsoft Store or website
+- **Roblox** installed
+- **Screen resolution**: 2560x1440 (or adjust screenshots accordingly)
 
 ## Quick Start
 
-### 1. Install Python Dependencies
+### 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Set Your Game's Place ID
+### 2. Set Your Place ID
 
-Open `config.json` and replace `REPLACE_WITH_YOUR_PLACE_ID` with your game's Place ID:
-
+Open `config.json` and set:
 ```json
-"place_id": "123456789"
+"place_id": "YOUR_PLACE_ID"
 ```
 
-**How to find the Place ID:** Go to the game's page on roblox.com — the URL looks like `roblox.com/games/123456789/Game-Name`. The number is your Place ID.
+Find it in the game URL: `roblox.com/games/PLACE_ID/Train-Robots-to-Fight`
 
 ### 3. Capture Reference Screenshots
 
-The bot needs screenshots of the game's UI elements to know what to look for. Run the capture tool:
+The bot needs screenshots of game UI elements to know what to click.
 
 ```bash
 python capture_tool.py
 ```
 
-This walks you through capturing each image. You need **at minimum**:
+Or capture them manually (screenshot → crop → save as PNG to `images/`):
 
-| Image | Filename | What to capture |
-|-------|----------|----------------|
-| Reward 1 | `images/reward_1.png` | The first reward button when it appears |
-| Reward 2 | `images/reward_2.png` | The second reward button |
-| Reward 3 | `images/reward_3.png` | The third reward button |
+**Required images:**
 
-**Optional but recommended:**
+| File | What to capture |
+|------|----------------|
+| `images/online_gifts_button.png` | The gift box button above "Daily Pack" (opens the reward grid) |
+| `images/target_claim.png` | The crosshair/target reward tile when it shows "Claim" |
+| `images/gear_claim.png` | The red gear reward tile when it shows "Claim" |
 
-| Image | Filename | What to capture |
-|-------|----------|----------------|
-| Game Loaded | `images/game_loaded.png` | A HUD element visible when game is loaded |
-| Loading Screen | `images/loading_screen.png` | The Roblox loading spinner/bar |
-| Reconnect | `images/reconnect.png` | The "Reconnect" button in disconnect popup |
-| Update | `images/update.png` | The "OK/Update" button in update popup |
+**Recommended:**
 
-**Screenshot tips:**
-- Crop tightly around just the button/element
-- Don't include surrounding background
-- Use PNG format (lossless)
-- If all 3 reward buttons look identical, just copy `reward_1.png` to `reward_2.png` and `reward_3.png`
+| File | What to capture |
+|------|----------------|
+| `images/claim_green.png` | Just the green "Claim" button text (fallback) |
+| `images/game_loaded.png` | Any HUD element visible when game is fully loaded |
+| `images/loading_screen.png` | The Roblox loading spinner/bar |
 
-### 4. Test with Dry Run
+**Optional (popup handling):**
+
+| File | What to capture |
+|------|----------------|
+| `images/reconnect.png` | "Reconnect" button on disconnect popup |
+| `images/update.png` | "OK/Update" button on update popup |
+
+**Tips:**
+- Crop tightly — just the button/tile, no extra background
+- PNG format only (lossless)
+- For reward Claim images: wait until the timer finishes so the green "Claim" button is visible, then screenshot
+
+### 4. Test First
 
 ```bash
 python bot.py --dry-run
 ```
 
-This runs the bot in test mode — it detects everything but doesn't click. Check the console output to verify it finds your UI elements correctly.
+Runs in test mode — detects elements but doesn't click. Check console output to verify detection works.
 
 ### 5. Run the Bot
 
@@ -80,103 +88,96 @@ This runs the bot in test mode — it detects everything but doesn't click. Chec
 python bot.py
 ```
 
-The bot will run continuously until you stop it.
+Runs continuously. Each cycle takes ~20-25 minutes.
 
-**To stop:** Press `Ctrl+C` or move your mouse to the **top-left corner** of the screen (failsafe).
+**To stop:**
+- `Ctrl+C` — clean shutdown
+- Move mouse to **top-left corner** — failsafe instant stop
 
-## Configuration Reference
+## Configuration
 
 All settings are in `config.json`:
 
-### `game`
-| Key | Description | Default |
-|-----|-------------|---------|
-| `place_id` | Your Roblox game's Place ID | (required) |
-| `roblox_exe_name` | Roblox process name | `RobloxPlayerBeta.exe` |
+### Timing
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `target_reward_minutes` | Expected time for target reward | `15` |
+| `gear_reward_minutes` | Expected time for gear reward | `20` |
+| `reward_check_interval_seconds` | How often to check for Claim | `5` |
+| `max_loading_wait_seconds` | Max time to wait for game load | `120` |
 
-### `timing`
-| Key | Description | Default |
-|-----|-------------|---------|
-| `reward_cycle_minutes` | Expected time between reward drops | `20` |
-| `reward_check_interval_seconds` | How often to check for rewards | `5` |
-| `post_collect_wait_seconds` | Wait after collecting rewards | `2` |
-| `post_close_wait_seconds` | Wait after closing Roblox | `5` |
-| `post_launch_wait_seconds` | Wait after launching Roblox | `15` |
-| `max_loading_wait_seconds` | Max time to wait for game to load | `120` |
-| `between_rewards_delay_seconds` | Delay between clicking each reward | `1.5` |
+### Anti-AFK
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `enabled` | Turn anti-AFK on/off | `true` |
+| `interval_seconds` | Seconds between keep-alive inputs | `300` (5 min) |
+| `action` | Type: `camera_rotate`, `key_press`, `mouse_jiggle` | `camera_rotate` |
+| `key` | Which key to press | `d` |
 
-### `matching`
-| Key | Description | Default |
-|-----|-------------|---------|
+### Image Matching
+| Setting | Description | Default |
+|---------|-------------|---------|
 | `confidence_threshold` | Min match confidence (0.0–1.0) | `0.8` |
-| `grayscale_matching` | Use grayscale (faster but less precise) | `false` |
-| `multi_scale` | Try multiple image scales | `false` |
-| `scales` | Scale factors for multi-scale | `[0.8–1.2]` |
+| `grayscale_matching` | Faster but less precise | `false` |
 
-### `safety`
-| Key | Description | Default |
-|-----|-------------|---------|
+### Safety
+| Setting | Description | Default |
+|---------|-------------|---------|
 | `failsafe_enabled` | Mouse-to-corner abort | `true` |
-| `max_consecutive_failures` | Max failed cycles before stopping | `5` |
-| `pause_on_failure_seconds` | Wait between retries on failure | `10` |
+| `max_consecutive_failures` | Failed cycles before stopping | `5` |
 
-## Updating Reference Images
+## Updating Images
 
-When the game's UI changes:
-
+When the game UI changes:
 1. Take new screenshots of the changed elements
-2. Crop tightly and save as PNG to `images/`
-3. Use the same filenames (or update `config.json` → `images` section)
-4. Test with `--dry-run` before running
+2. Crop tightly, save as PNG to `images/`
+3. Test with `--dry-run`
 
-Or re-run `python capture_tool.py` for guided capture.
+Or re-run `python capture_tool.py`.
 
 ## Log Output
 
-The bot logs to both console and `bot.log`:
+Logs to console and `bot.log`:
 
 ```
 [2026-03-13 02:15:30] INFO: CYCLE 1 STARTED
 [2026-03-13 02:15:31] INFO: Roblox launch command sent
-[2026-03-13 02:15:45] INFO: JOINED — game is loaded and ready
-[2026-03-13 02:35:50] INFO: Rewards detected after 1205s: 3 visible
-[2026-03-13 02:35:51] INFO: Collected Reward 1/3
-[2026-03-13 02:35:53] INFO: Collected Reward 2/3
-[2026-03-13 02:35:55] INFO: Collected Reward 3/3
+[2026-03-13 02:15:45] INFO: JOINED — game loaded successfully
+[2026-03-13 02:15:48] INFO: Online Gifts panel opened
+[2026-03-13 02:15:48] INFO: Anti-AFK started: camera_rotate every 300s
+[2026-03-13 02:30:50] INFO: COLLECTED Target Reward (crosshair) after 903s
+[2026-03-13 02:35:55] INFO: COLLECTED Gear Reward (red gear) after 1207s
 [2026-03-13 02:35:57] INFO: Closing Roblox for next cycle...
-[2026-03-13 02:36:02] INFO: CYCLE 1 COMPLETE — collected 3/3
+[2026-03-13 02:36:02] INFO: CYCLE 1 COMPLETE — collected 2/2
+[2026-03-13 02:36:02] INFO: STATS: 2 rewards in 1 cycles | Running for 0:20:32
 ```
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| Bot can't find reward buttons | Lower `confidence_threshold` to 0.7, or recapture cleaner screenshots |
-| Bot clicks wrong things | Raise `confidence_threshold` to 0.85–0.9, capture more specific images |
-| Game takes too long to load | Increase `max_loading_wait_seconds` |
-| Bot stops after a few cycles | Check `max_consecutive_failures` — increase if your game is flaky |
-| Roblox won't launch | Make sure you're logged into Roblox in the browser first |
-| "FailSafe" triggered | You moved your mouse to the screen corner — this is a safety feature |
+| Bot can't find buttons | Lower `confidence_threshold` to 0.7, recapture cleaner screenshots |
+| Bot clicks wrong things | Raise `confidence_threshold` to 0.85, use more specific crops |
+| AFK disconnect still happens | Lower `anti_afk.interval_seconds` to 180 (3 min) |
+| Game loads slowly | Increase `max_loading_wait_seconds` to 180 |
+| Roblox won't launch | Make sure you're logged into Roblox in the browser |
 
 ## File Structure
 
 ```
 roblox-bot/
-├── bot.py              # Main bot script
-├── image_matcher.py    # OpenCV screen matching
-├── window_manager.py   # Roblox window control
+├── bot.py              # Main bot (cycle loop + reward collection)
+├── image_matcher.py    # OpenCV template matching engine
+├── window_manager.py   # Roblox window focus/close/launch
 ├── capture_tool.py     # Screenshot capture helper
-├── config.json         # All settings (edit this)
+├── config.json         # All settings
 ├── requirements.txt    # Python dependencies
-├── bot.log            # Runtime log (created on first run)
-├── images/            # Reference screenshots (you provide these)
-│   ├── reward_1.png
-│   ├── reward_2.png
-│   ├── reward_3.png
-│   ├── game_loaded.png
-│   ├── loading_screen.png
-│   ├── reconnect.png
-│   ├── update.png
+├── bot.log             # Runtime log (auto-created)
+├── images/             # Your reference screenshots go here
+│   ├── online_gifts_button.png
+│   ├── target_claim.png
+│   ├── gear_claim.png
+│   ├── claim_green.png
 │   └── ...
 └── README.md
 ```
