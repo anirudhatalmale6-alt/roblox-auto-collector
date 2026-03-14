@@ -1,6 +1,6 @@
 {
     "game": {
-        "place_id": "REPLACE_WITH_YOUR_PLACE_ID",
+        "place_id": "132167728984724",
         "launch_url_template": "roblox://placeId={place_id}",
         "roblox_exe_name": "RobloxPlayerBeta.exe",
         "roblox_launcher_exe": "RobloxPlayerLauncher.exe"
