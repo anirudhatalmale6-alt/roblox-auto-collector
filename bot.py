@@ -312,17 +312,40 @@ def wait_for_game_loaded():
 
 # ─── Online Gifts Navigation ────────────────────────────────────────
 
+def is_reward_panel_open():
+    """Check if the Online Reward panel is already open."""
+    # Check for the "Online Reward" header text
+    if is_image_visible("reward_panel_header"):
+        return True
+    # Check for the close (X) button which is visible when the panel is open
+    if is_image_visible("close_reward_panel"):
+        return True
+    # Also check if any reward claim button is visible (panel must be open)
+    if is_image_visible("target_reward_claim") or is_image_visible("gear_reward_claim"):
+        return True
+    if is_image_visible("claim_button_green"):
+        return True
+    return False
+
+
 def open_online_gifts():
     """
     Click the "Online Gifts" button to open the reward grid.
 
     The Online Gifts button is the gift box icon above "Daily Pack"
-    on the left side panel.
+    on the left side panel. If the panel is already open, returns True
+    immediately. If the button image is missing, logs a warning and
+    the user should open it manually or provide the screenshot.
 
     Returns:
-        True if the panel was opened, False if button not found.
+        True if the panel is open, False otherwise.
     """
     logger.info("Opening Online Gifts panel...")
+
+    # Check if already open
+    if is_reward_panel_open():
+        logger.info("Online Rewards panel already open")
+        return True
 
     # Try clicking the Online Gifts button
     for attempt in range(3):
@@ -333,7 +356,13 @@ def open_online_gifts():
         logger.debug(f"Online Gifts button not found (attempt {attempt+1}/3)")
         time.sleep(2)
 
-    logger.warning("Could not find Online Gifts button!")
+    # If we can't find the button, check if the panel opened anyway
+    if is_reward_panel_open():
+        logger.info("Online Rewards panel detected (opened without button click)")
+        return True
+
+    logger.warning("Could not open Online Gifts panel! "
+                   "Make sure online_gifts_button.png is in the images/ folder.")
     return False
 
 

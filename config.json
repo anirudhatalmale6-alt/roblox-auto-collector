@@ -38,14 +38,15 @@
         "loading_screen": "loading_screen.png",
         "reconnect_popup": "reconnect.png",
         "update_popup": "update.png",
-        "close_reward_panel": "close_panel.png"
+        "close_reward_panel": "close_panel.png",
+        "reward_panel_header": "online_reward_header.png"
     },
 
     "matching": {
-        "confidence_threshold": 0.8,
+        "confidence_threshold": 0.75,
         "grayscale_matching": false,
-        "multi_scale": false,
-        "scales": [0.8, 0.9, 1.0, 1.1, 1.2]
+        "multi_scale": true,
+        "scales": [0.75, 0.85, 1.0, 1.15, 1.33, 1.5]
     },
 
     "window": {
